@@ -49,6 +49,7 @@ public class SearchService {
     private static final String PAYLOAD_ALIAS = "payloadDoc";
     private static final int DROPDOWN_SNAPSHOT_VERSION = 2;
     private static final int EXCEL_HARD_MAX_ROWS_PER_SHEET = 1_048_575;
+    private static final int EXCEL_MAX_CELL_CHARS = 32_767;
     private static final Pattern TEXT_PAYLOAD_TAG_LINE_PATTERN = Pattern.compile("^\\s*(.*?)\\s*:(\\d{2}[A-Z]?):\\s*(.*)$");
     private static final Pattern GENERIC_TEXT_PAYLOAD_LABEL_PATTERN = Pattern.compile("(?i)^line\\s+\\d+.*$");
     private static final Map<String, Field> SEARCH_RESPONSE_FIELDS = initSearchResponseFields();
@@ -374,6 +375,19 @@ public class SearchService {
         List<SearchResponse> results = new ArrayList<>();
         forEachExportResponse(filters, results::add);
         return results;
+    }
+
+    public long countSearchResults(Map<String, String> filters) {
+        String messagesCol = appConfig.getSwiftCollection();
+        SearchPlan plan = buildSearchPlan(filters);
+        if (appConfig.isOptimizeWithoutLookup() && !plan.requiresLookup()) {
+            return countMessages(messagesCol, plan.messageMatch(), filters);
+        }
+        return aggregateCount(messagesCol, buildLookupPipeline(plan), filters);
+    }
+
+    public void forEachDetailedExportResponse(Map<String, String> filters, Consumer<SearchResponse> consumer) {
+        forEachExportResponse(filters, consumer);
     }
 
     public void streamResultTableExport(Map<String, String> filters,
@@ -1607,7 +1621,7 @@ public class SearchService {
         Sheet sheet = workbook.createSheet(sheetIndex == 1 ? "Export" : "Export " + sheetIndex);
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < columns.size(); i++) {
-            headerRow.createCell(i).setCellValue(columns.get(i).getLabel());
+            headerRow.createCell(i).setCellValue(toExcelCellValue(columns.get(i).getLabel()));
             sheet.setColumnWidth(i, 24 * 256);
         }
         return sheet;
@@ -1627,8 +1641,15 @@ public class SearchService {
 
     private void writeExcelRow(Row row, List<ExportColumnRequest> columns, SearchResponse response) {
         for (int i = 0; i < columns.size(); i++) {
-            row.createCell(i).setCellValue(resolveExportColumnValue(response, columns.get(i).getKey()));
+            row.createCell(i).setCellValue(toExcelCellValue(resolveExportColumnValue(response, columns.get(i).getKey())));
         }
+    }
+
+    private String toExcelCellValue(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.length() <= EXCEL_MAX_CELL_CHARS ? value : value.substring(0, EXCEL_MAX_CELL_CHARS);
     }
 
     private List<ExportColumnRequest> normalizeExportColumns(List<ExportColumnRequest> columns) {

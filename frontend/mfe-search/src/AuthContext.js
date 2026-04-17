@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 const AuthContext = createContext(null);
-const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 function decodeJwt(t) { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))); } catch { return null; } }
 function getExpiry(t) { const p=decodeJwt(t); return p?.exp ? p.exp*1000 : null; }
 function isExpired(t) { const e=getExpiry(t); return !e||Date.now()>=e; }

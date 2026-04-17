@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "start": "npx concurrently \"npm start --prefix shell-app\" \"npm start --prefix mfe-user-management\" \"npm start --prefix mfe-search\" \"npm start --prefix mfe-profile\""
-}
+    "start": "npx concurrently \"npm start --prefix shell-app\" \"npm start --prefix mfe-user-management\" \"npm start --prefix mfe-search\" \"npm start --prefix mfe-profile\""
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "dotenv-expand": "^12.0.3"
+  }
 }

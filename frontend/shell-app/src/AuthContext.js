@@ -3,7 +3,7 @@ import React, {
 } from "react";
 
 const AuthContext = createContext(null);
-const API_BASE    = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+const API_BASE    = process.env.REACT_APP_API_BASE_URL;
 
 // ── JWT helpers ───────────────────────────────────────────────────────────────
 function decodeJwt(token) {

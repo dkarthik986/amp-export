@@ -85,18 +85,34 @@ html,body { height:100%; font-family:var(--font); background:var(--background-co
 
 /* -- Quick access dropdown -- */
 .shell-utility { position:relative; display:flex; align-items:center; height:100%; }
+.shell-utility-actions { display:flex; align-items:center; gap:8px; }
+.shell-utility-notifications { position:relative; display:flex; align-items:center; }
+.shell-export-flyout,
+.shell-notification-panel { position:absolute; top:calc(100% + 8px); width:360px; max-height:min(70vh, 520px); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-xl); overflow:hidden; z-index:410; }
+.shell-notification-panel { right:0; }
+.shell-export-flyout-header { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,color-mix(in srgb,var(--primary-color) 6%,var(--surface)),var(--surface)); }
+.shell-export-flyout-header span:first-child { font-size:12.5px; font-weight:700; color:var(--text-primary); }
+.shell-export-flyout-head-actions { display:flex; align-items:center; gap:8px; }
+.shell-export-flyout-pill { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 7px; border-radius:var(--radius-full); background:color-mix(in srgb,var(--primary-color) 14%,var(--surface)); color:var(--primary-color); font-size:10px; font-weight:700; }
+.shell-export-flyout-close { width:24px; height:24px; border:1px solid var(--border); border-radius:var(--radius-full); background:var(--surface); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--transition); padding:0; }
+.shell-export-flyout-close:hover { color:var(--text-primary); border-color:var(--primary-color); background:color-mix(in srgb,var(--primary-color) 7%,var(--surface)); }
+.shell-export-flyout-list { display:flex; flex-direction:column; gap:8px; padding:10px; max-height:calc(min(70vh, 520px) - 52px); overflow:auto; }
+.shell-export-flyout-item { padding:11px 12px; }
+.shell-notification-empty { padding:18px 14px; font-size:12px; color:var(--text-muted); text-align:center; }
 .shell-utility-trigger { position:relative; display:flex; align-items:center; gap:8px; height:28px; padding:0 10px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); color:var(--text-primary); cursor:pointer; transition:all var(--transition); font-family:var(--font); }
 .shell-utility-trigger:hover,
 .shell-utility-trigger.active { border-color:var(--primary-color); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-color) 12%,transparent); }
+.shell-notification-trigger { width:36px; min-width:36px; justify-content:center; padding:0; }
 .shell-utility-trigger-icon { display:flex; align-items:center; justify-content:center; color:var(--text-secondary); }
 .shell-utility-trigger-caret { color:var(--text-muted); transition:transform var(--transition); }
 .shell-utility-trigger.active .shell-utility-trigger-caret { transform:rotate(180deg); }
 .shell-utility-trigger-badge { position:absolute; top:-5px; right:18px; min-width:16px; height:16px; padding:0 4px; border-radius:var(--radius-full); background:var(--error); color:var(--surface); font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; line-height:1; }
+.shell-notification-trigger .shell-utility-trigger-badge { right:-4px; }
 .shell-utility-menu { position:absolute; top:calc(100% + 8px); right:0; width:340px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-xl); overflow:hidden; z-index:400; }
 .shell-utility-menu-header { padding:14px 16px 12px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,color-mix(in srgb,var(--primary-color) 6%,var(--surface)),var(--surface)); }
 .shell-utility-menu-title { font-size:14px; font-weight:700; color:var(--text-primary); }
 .shell-utility-menu-subtitle { margin-top:3px; font-size:11px; color:var(--text-muted); }
-.shell-utility-option-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:12px 12px 0; }
+.shell-utility-option-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:12px 12px 0; }
 .shell-utility-option { display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); cursor:pointer; text-align:left; transition:all var(--transition); min-width:0; }
 .shell-utility-option:hover,
 .shell-utility-option.active { border-color:var(--primary-color); background:color-mix(in srgb,var(--primary-color) 7%,var(--surface)); }
@@ -125,6 +141,16 @@ html,body { height:100%; font-family:var(--font); background:var(--background-co
 .shell-utility-notification-item p { font-size:12.5px; font-weight:600; color:var(--text-primary); line-height:1.35; }
 .shell-utility-notification-item small { display:block; margin-top:2px; font-size:10.5px; color:var(--text-muted); }
 .shell-utility-notification-dot { width:8px; height:8px; min-width:8px; border-radius:var(--radius-full); background:var(--primary-color); margin-top:5px; }
+.shell-utility-notification-body { min-width:0; flex:1; }
+.shell-utility-notification-meta { margin-top:6px; font-size:12px; line-height:1.45; color:var(--text-secondary); }
+.shell-utility-notification-progress { margin-top:8px; width:100%; height:6px; border-radius:var(--radius-full); background:color-mix(in srgb,var(--primary-color) 12%,var(--surface)); overflow:hidden; }
+.shell-utility-notification-progress-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--primary-color),var(--accent-color)); }
+.shell-utility-notification-subtext { margin-top:6px; font-size:11px; font-weight:600; color:var(--text-secondary); }
+.shell-utility-notification-error { margin-top:8px; font-size:11px; line-height:1.45; color:var(--error); background:var(--error-bg); border-radius:var(--radius-sm); padding:6px 8px; }
+.shell-utility-cancel-btn { margin-top:10px; display:inline-flex; align-items:center; justify-content:center; padding:7px 12px; border:1px solid color-mix(in srgb,var(--error) 32%,var(--border)); border-radius:var(--radius); background:var(--error-bg); color:var(--error); font-size:11.5px; font-weight:700; cursor:pointer; transition:all var(--transition); font-family:var(--font); }
+.shell-utility-cancel-btn:hover { border-color:var(--error); background:color-mix(in srgb,var(--error) 12%,var(--surface)); }
+.shell-utility-download-btn { margin-top:10px; display:inline-flex; align-items:center; justify-content:center; padding:7px 12px; border:1px solid color-mix(in srgb,var(--primary-color) 28%,var(--border)); border-radius:var(--radius); background:color-mix(in srgb,var(--primary-color) 8%,var(--surface)); color:var(--primary-color); font-size:11.5px; font-weight:700; cursor:pointer; transition:all var(--transition); font-family:var(--font); }
+.shell-utility-download-btn:hover { border-color:var(--primary-color); background:color-mix(in srgb,var(--primary-color) 14%,var(--surface)); }
 .shell-utility-account { display:flex; flex-direction:column; gap:12px; }
 .shell-utility-account-card { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:14px; background:linear-gradient(180deg,color-mix(in srgb,var(--primary-color) 5%,var(--surface)),var(--surface)); }
 .shell-utility-account-avatar { width:42px; height:42px; min-width:42px; border-radius:var(--radius-full); background:linear-gradient(135deg,var(--primary-color),var(--accent-color)); color:var(--surface); font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center; }
@@ -294,6 +320,9 @@ html,body { height:100%; font-family:var(--font); background:var(--background-co
 
 @media (max-width: 720px) {
   .tabbar-tools { padding-right:8px; }
+  .shell-export-flyout,
+  .shell-notification-panel { width:min(340px, calc(100vw - 18px)); }
+  .shell-export-flyout-list { max-height:280px; }
   .shell-utility-menu { width:min(340px, calc(100vw - 18px)); right:-2px; }
   .shell-utility-option-list { grid-template-columns:1fr; }
   .shell-utility-account-actions { flex-direction:column; }

@@ -28,8 +28,6 @@ public class AppConfig {
 
     @Value("${mongo.collection.audit:audit_logs}")
     private String auditCollection;
-    @Value("${search.export.excel-max-rows-per-sheet:1048575}")
-    private int exportExcelMaxRowsPerSheet;
 
     // ── Search ────────────────────────────────────────────────────────────
     @Value("${search.default-page-size:20}")
@@ -50,6 +48,9 @@ public class AppConfig {
     @Value("${search.export-fetch-batch-size:5000}")
     private int exportFetchBatchSize;
 
+    @Value("${search.export.excel-max-rows-per-sheet:1048575}")
+    private int exportExcelMaxRowsPerSheet;
+
     @Value("${search.optimize-without-lookup:true}")
     private boolean optimizeWithoutLookup;
 
@@ -65,6 +66,12 @@ public class AppConfig {
     @Value("${mongo.collection.dropdown-options:drop_down}")
     private String dropdownOptionsCollection;
 
+    @Value("${mongo.collection.export-jobs:export_jobs}")
+    private String exportJobsCollection;
+
+    @Value("${mongo.collection.export-job-locks:export_job_locks}")
+    private String exportJobLocksCollection;
+
     @Value("${search.dropdown.document-id:search_dropdown_options}")
     private String dropdownOptionsDocumentId;
 
@@ -76,6 +83,48 @@ public class AppConfig {
 
     @Value("${search.dropdown.refresh-initial-delay-minutes:5}")
     private long dropdownRefreshInitialDelayMinutes;
+
+    @Value("${search.export.background-threshold:1000}")
+    private int exportBackgroundThreshold;
+
+    @Value("${search.export.use-gridfs:true}")
+    private boolean exportUseGridFs;
+
+    @Value("${search.export.output-dir:#{systemProperties['java.io.tmpdir'] + '/swift-export-jobs'}}")
+    private String exportOutputDir;
+
+    @Value("${search.export.job-poll-interval-ms:8000}")
+    private long exportJobPollIntervalMs;
+
+    @Value("${search.export.dispatch-poll-interval-ms:5000}")
+    private long exportDispatchPollIntervalMs;
+
+    @Value("${search.export.dispatch-lock-timeout-seconds:30}")
+    private long exportDispatchLockTimeoutSeconds;
+
+    @Value("${search.export.max-records-per-file:500}")
+    private int exportMaxRecordsPerFile;
+
+    @Value("${search.export.progress-save-interval:25}")
+    private int exportProgressSaveInterval;
+
+    @Value("${search.export.cleanup-retention-hours:48}")
+    private long exportCleanupRetentionHours;
+
+    @Value("${search.export.cleanup-interval-hours:6}")
+    private long exportCleanupIntervalHours;
+
+    @Value("${search.export.cleanup-initial-delay-minutes:30}")
+    private long exportCleanupInitialDelayMinutes;
+
+    @Value("${search.export.executor.core-pool-size:1}")
+    private int exportExecutorCorePoolSize;
+
+    @Value("${search.export.executor.max-pool-size:1}")
+    private int exportExecutorMaxPoolSize;
+
+    @Value("${search.export.executor.queue-capacity:20}")
+    private int exportExecutorQueueCapacity;
 
     // ── Admin ─────────────────────────────────────────────────────────────
     @Value("${admin.protected-id:ADMIN001}")

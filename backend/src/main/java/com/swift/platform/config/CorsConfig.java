@@ -14,11 +14,17 @@ public class CorsConfig {
     @Value("${cors.allowed-origins:http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003}")
     private String allowedOrigins;
 
+    @Value("${cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*,http://172.18.19.*:*}")
+    private String allowedOriginPatterns;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-        // Bug #6 fix: trim() each origin after split so spaces in CORS_ALLOWED_ORIGINS env var
-        // (e.g. "http://localhost:3000, http://localhost:3001") don't break CORS matching.
         String[] origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toArray(String[]::new);
+
+        String[] originPatterns = Arrays.stream(allowedOriginPatterns.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);
@@ -26,12 +32,17 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins(origins)
+                var registration = registry.addMapping("/**")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true)
                         .maxAge(3600);
+
+                if (originPatterns.length > 0) {
+                    registration.allowedOriginPatterns(originPatterns);
+                } else {
+                    registration.allowedOrigins(origins);
+                }
             }
         };
     }

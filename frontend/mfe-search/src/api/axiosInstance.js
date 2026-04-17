@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base URL comes from .env → REACT_APP_API_BASE_URL
 // Change in .env only — no code touch needed
-const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL: API_BASE,

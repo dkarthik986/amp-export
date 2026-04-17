@@ -4,14 +4,16 @@ import "./RawCopies.css";
 import { useAuth } from "../AuthContext";
 
 // ── All API endpoints read from .env — no hardcoded URLs ─────────────────────
-const API_BASE_URL      = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search`;
-const API_EXPORT_ALL_URL = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search/export-all`;
-const API_EXPORT_ALL_FILE_URL = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search/export-all/file`;
-const API_DETAIL_BY_REF_URL = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search/detail/by-reference`;
-const API_DETAILS_BY_REFS_URL = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search/details/by-references`;
-const API_DROPDOWN_URL   = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/dropdown-options`;
-const API_FIELD_CFG_URL  = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/search/field-config`;
-const API_RAW_COPIES_URL = `${process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"}/api/raw-copies`;
+const API_BASE_URL      = `${process.env.REACT_APP_API_BASE_URL}/api/search`;
+const API_EXPORT_ALL_URL = `${process.env.REACT_APP_API_BASE_URL}/api/search/export-all`;
+const API_EXPORT_ALL_FILE_URL = `${process.env.REACT_APP_API_BASE_URL}/api/search/export-all/file`;
+const API_EXPORT_JOBS_URL = `${process.env.REACT_APP_API_BASE_URL}/api/export-jobs`;
+const API_DETAIL_BY_REF_URL = `${process.env.REACT_APP_API_BASE_URL}/api/search/detail/by-reference`;
+const API_DETAILS_BY_REFS_URL = `${process.env.REACT_APP_API_BASE_URL}/api/search/details/by-references`;
+const API_DROPDOWN_URL   = `${process.env.REACT_APP_API_BASE_URL}/api/dropdown-options`;
+const API_FIELD_CFG_URL  = `${process.env.REACT_APP_API_BASE_URL}/api/search/field-config`;
+const API_RAW_COPIES_URL = `${process.env.REACT_APP_API_BASE_URL}/api/raw-copies`;
+const EXPORT_JOB_REFRESH_EVENT = "swift-export-job-created";
 
 // ── MT/MX pair map ────────────────────────────────────────────────────────────
 const BASE_MT_MX_PAIRS = {
@@ -3550,6 +3552,42 @@ function Search() {
         return null;
     };
 
+    const createBackendExportJob = useCallback(async ({ format, scope, targetKeys }) => {
+        const orderedKeys = Array.isArray(targetKeys) && targetKeys.length ? targetKeys : ["table"];
+        const isTableOnly = orderedKeys.length === 1 && orderedKeys[0] === "table";
+        const payload = {
+            format,
+            scope,
+            targetKeys: orderedKeys,
+            columns: isTableOnly ? backendTableExportColumns : [],
+        };
+
+        if (scope === "all") {
+            const requestBody = buildSearchRequest(searchState, 0, recordsPerPage);
+            payload.filters = requestBody.filters;
+            payload.totalCount = serverTotal;
+        } else {
+            const references = [...new Set((getExportRows(scope) || []).map(getReference).filter(Boolean))];
+            if (!references.length) {
+                throw new Error("No messages available for export.");
+            }
+            payload.references = references;
+            payload.totalCount = references.length;
+        }
+
+        const res = await fetch(API_EXPORT_JOBS_URL, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            let detail = "";
+            try { detail = await res.text(); } catch {}
+            throw new Error(`Export job creation failed (${res.status})${detail ? `: ${detail}` : ""}`);
+        }
+        return res.json();
+    }, [authHeaders, backendTableExportColumns, buildSearchRequest, currentRecords, getReference, processed, recordsPerPage, searchState, selectedRows, serverTotal]);
+
     const fetchRawCopiesByRefs = useCallback(async (references) => {
         const uniqueRefs = [...new Set((references || []).filter(Boolean))];
         if (uniqueRefs.length === 0) return new Map();
@@ -4166,6 +4204,17 @@ function Search() {
                 throw new Error("Word export is unavailable when Raw Copies is selected.");
             }
 
+            try {
+                const job = await createBackendExportJob({ format, scope, targetKeys: orderedKeys });
+                window.dispatchEvent(new CustomEvent(EXPORT_JOB_REFRESH_EVENT, { detail: job }));
+                showToast(`Export started for ${job.totalCount?.toLocaleString?.() || 0} rows. Track progress in Notifications.`, "info");
+                return;
+            } catch (jobError) {
+                if (!String(jobError?.message || "").includes("Background export is available only above")) {
+                    throw jobError;
+                }
+            }
+
             const useBackendTableAllExport = scope === "all"
                 && orderedKeys.length === 1
                 && orderedKeys[0] === "table"
@@ -4488,7 +4537,7 @@ function Search() {
         <div className="container">
             {toastMsg&&<div className={`toast toast-${toastMsg.type}`}><span>{toastMsg.msg}</span></div>}
             {isFetching&&<div style={{padding:"10px 16px",background:"var(--accent-light)",borderRadius:6,marginBottom:8,fontSize:13,color:"var(--accent)",display:"flex",alignItems:"center",gap:8}}><span className="spinner" style={{borderTopColor:"var(--accent)"}}/>Loading messages from backend...</div>}
-            {fetchError &&<div style={{padding:"10px 16px",background:"var(--danger-light)",borderRadius:6,marginBottom:8,fontSize:13,color:"var(--danger)",border:"1px solid var(--danger-border)"}}>&#x26A0; Backend error: {fetchError}. Make sure Spring Boot is running on http://localhost:8080</div>}
+            {fetchError &&<div style={{padding:"10px 16px",background:"var(--danger-light)",borderRadius:6,marginBottom:8,fontSize:13,color:"var(--danger)",border:"1px solid var(--danger-border)"}}>&#x26A0; Backend error: {fetchError}. Check that the backend is reachable at {process.env.REACT_APP_API_BASE_URL}</div>}
 
             {/* ── Header bar ── */}
             <div className="app-header">
@@ -4905,7 +4954,7 @@ function Search() {
                     )}
                     <div className="export-wrap" ref={exportMenuRef}>
                         <button className="tool-btn tool-btn-primary" onClick={()=>!isExporting&&setShowExportMenu(p=>!p)} disabled={isExporting}>
-                            {isExporting?<><span className="spinner" style={{borderTopColor:"var(--accent)",borderColor:"var(--accent-mid)"}}/>Exporting…</>:<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg></>}
+                            <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg></>
                         </button>
                         {showExportMenu&&<div className="export-dropdown">
                             <div className="export-scope-section"><div className="export-scope-header"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Export Scope</div>

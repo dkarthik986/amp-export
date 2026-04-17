@@ -8,7 +8,7 @@ const PORT = parseInt(process.env.PORT) || 3001;
 
 module.exports = {
   entry: "./src/index.js",
-  output: { filename: "[name].[contenthash].js", path: path.resolve(__dirname, "dist"), publicPath: `http://localhost:${PORT}/`, clean: true },
+  output: { filename: "[name].[contenthash].js", path: path.resolve(__dirname, "dist"), publicPath: "auto", clean: true },
   resolve: { extensions: [".js", ".jsx"] },
   module: {
     rules: [
@@ -31,5 +31,12 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({ template: "./public/index.html" }),
   ],
-  devServer: { port: PORT, historyApiFallback: true, hot: true, headers: { "Access-Control-Allow-Origin": "*" } },
+ devServer: {
+  host: "0.0.0.0",
+  port: PORT,
+  allowedHosts: "all",
+  historyApiFallback: true,
+  hot: true,
+  headers: { "Access-Control-Allow-Origin": "*" },
+},
 };

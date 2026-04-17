@@ -58,11 +58,12 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({ template: "./public/index.html" }),
   ],
-  devServer: {
-    port: PORT,
-    historyApiFallback: true,
-    hot: true,
-    headers: { "Access-Control-Allow-Origin": "*" },
-  },
-  optimization: { moduleIds: "deterministic" },
+ devServer: {
+  host: "0.0.0.0",
+  port: PORT,
+  allowedHosts: "all",
+  historyApiFallback: true,
+  hot: true,
+  headers: { "Access-Control-Allow-Origin": "*" },
+},
 };

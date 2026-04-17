@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../AuthContext";
 import BrandLogo from "./BrandLogo";
 
-const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 export default function Login({ appName = "SWIFT Platform", appSubtitle = "Financial Messaging Intelligence" }) {
   const { login } = useAuth();
